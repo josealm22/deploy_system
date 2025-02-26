@@ -2,9 +2,25 @@
 
 echo "🚀 Iniciando configuración del servidor de despliegue..."
 
+# 🔹 Obtener key del repositorio Jenkins
+sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+
+# 🔹 Añadir repo
+echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc]" \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+
+
 # 🔹 Actualizar repositorios e instalar dependencias esenciales
 sudo apt update && sudo apt install -y \
-    python3 python3-pip python3-venv git sqlite3 curl nginx ansible openjdk-11-jdk jenkins
+    python3 python3-pip python3-venv git sqlite3 curl nginx ansible fontconfig openjdk-17-jre jenkins
+
+
+KEY_JENKINS_INSTALL=$(sudo cat /var/lib/jenkins/secrets/initialAdminPassword )
+
+
 
 # 🔹 Definir la carpeta de instalación
 INSTALL_DIR="/opt/deploy_system"
@@ -107,3 +123,4 @@ EOF
 
 echo "✅ Instalación completada. Accede a la API en: http://$SERVER_IP/"
 echo "📥 Descarga el script PowerShell en: http://$SERVER_IP/client.ps1"
+echo " Clave de instalacion Jenkins: $KEY_JENKINS_INSTALL"
