@@ -1,0 +1,91 @@
+- name: Desplegar Sistema de Gestión de Dispositivos
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Instalar dependencias en el servidor
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - git
+          - sqlite3
+          - curl
+          - nginx
+        state: present
+        update_cache: yes
+
+    - name: Crear entorno virtual de Python
+      command: python3 -m venv /opt/deploy_system/venv
+      args:
+        creates: /opt/deploy_system/venv
+
+    - name: Instalar dependencias de Python
+      pip:
+        requirements: /opt/deploy_system/requirements.txt
+        virtualenv: /opt/deploy_system/venv
+
+    - name: Asegurar que la API Flask se ejecuta al inicio
+      copy:
+        dest: /etc/systemd/system/deploy_api.service
+        content: |
+          [Unit]
+          Description=API de despliegue Flask
+          After=network.target
+
+          [Service]
+          User=root
+          WorkingDirectory=/opt/deploy_system
+          ExecStart=/opt/deploy_system/venv/bin/python3 /opt/deploy_system/app/app.py
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+      notify: Restart API
+
+    - name: Configurar Nginx para servir archivos de instalación
+      copy:
+        dest: /etc/nginx/sites-available/deploy_system
+        content: |
+          server {
+              listen 80;
+              server_name _;
+
+              location / {
+                  proxy_pass http://127.0.0.1:5000;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              }
+
+              location /client.ps1 {
+                  root /var/www/html;
+                  autoindex on;
+              }
+          }
+      notify: Restart Nginx
+
+    - name: Habilitar sitio Nginx y reiniciar
+      file:
+        src: /etc/nginx/sites-available/deploy_system
+        dest: /etc/nginx/sites-enabled/deploy_system
+        state: link
+      notify: Restart Nginx
+
+    - name: Generar script PowerShell con IP del servidor
+      template:
+        src: templates/client.ps1.j2
+        dest: /var/www/html/client.ps1
+
+  handlers:
+    - name: Restart API
+      systemd:
+        name: deploy_api
+        state: restarted
+        enabled: yes
+
+    - name: Restart Nginx
+      systemd:
+        name: nginx
+        state: restarted
+        enabled: yes

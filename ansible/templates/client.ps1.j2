@@ -1,0 +1,23 @@
+$server = "http://{{ ansible_default_ipv4.address }}:5000"
+$hostname = $env:COMPUTERNAME
+$ip = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -notlike "Loopback*" }).IPAddress
+
+# Registrar el equipo en el servidor
+$body = @{ hostname = $hostname; ip = $ip } | ConvertTo-Json -Compress
+Invoke-RestMethod -Uri "$server/register_device" -Method Post -Body $body -ContentType "application/json"
+
+while ($true) {
+    try {
+        $task_url = "$server/get_task?hostname=$hostname"
+        $task_response = Invoke-RestMethod -Uri $task_url -Method Get
+        $task = $task_response.task
+
+        if ($task -ne "") {
+            Invoke-Expression $task
+        }
+    } catch {
+        Write-Host "Error al conectar con el servidor: $_"
+    }
+
+    Start-Sleep -Seconds 300
+}

@@ -1,0 +1,8 @@
+- name: Generar script PowerShell con la IP del servidor
+  hosts: localhost
+  tasks:
+    - name: Crear script PowerShell con IP dinámica
+      template:
+        src: templates/client.ps1.j2
+        dest: /var/www/html/client.ps1
+      become: true
