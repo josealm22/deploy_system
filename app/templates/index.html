@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Dispositivos</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <h1>Dispositivos Registrados</h1>
+    <table>
+        <tr>
+            <th>Hostname</th>
+            <th>IP</th>
+            <th>Estado</th>
+        </tr>
+        {% for device in devices %}
+        <tr>
+            <td>{{ device[0] }}</td>
+            <td>{{ device[1] }}</td>
+            <td>{{ device[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
