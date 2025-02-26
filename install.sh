@@ -8,7 +8,7 @@ sudo apt update && sudo apt install -y \
 
 # 🔹 Definir la carpeta de instalación
 INSTALL_DIR="/opt/deploy_system"
-GIT_REPO="https://github.com/tu_usuario/tu_repositorio.git"
+GIT_REPO="https://github.com/josealm22/deploy_system.git"
 
 # 🔹 Clonar el repositorio si no existe
 if [ ! -d "$INSTALL_DIR" ]; then
