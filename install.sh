@@ -36,12 +36,12 @@ else
     git pull origin master
 fi
 
+
+
+
 # Cambiar el usuario de carpeta proyecto 
 
 sudo chown -R $USER:$USER /opt/deploy_system
-
-
-
 # 🔹 Crear entorno virtual de Python
 echo "🐍 Creando entorno virtual..."
 python3 -m venv $INSTALL_DIR/venv

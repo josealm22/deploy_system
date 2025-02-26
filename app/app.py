@@ -1,23 +1,20 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 import sqlite3
 
 app = Flask(__name__)
 
-# 🔹 Conexión a la base de datos
 def db_connection():
-    return sqlite3.connect("deploy_system.db")
+    return sqlite3.connect("/opt/deploy_system/deploy_system.db")
 
-# 🔹 Página principal
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-# 🔹 Registrar un dispositivo
 @app.route("/register_device", methods=["POST"])
 def register_device():
     data = request.json
     hostname = data.get("hostname")
-    ip = data.get("ip")
+    ip = request.remote_addr  # Usar la IP de la petición HTTP
+
+    # Convertir `ip` a string si es una lista
+    if isinstance(ip, list):
+        ip = ip[0]
 
     conn = db_connection()
     cursor = conn.cursor()
@@ -25,20 +22,7 @@ def register_device():
     conn.commit()
     conn.close()
     
-    return jsonify({"message": "Device registered"}), 200
-
-# 🔹 Obtener tarea asignada a un equipo
-@app.route("/get_task", methods=["GET"])
-def get_task():
-    hostname = request.args.get("hostname")
-
-    conn = db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT task FROM devices WHERE hostname=?", (hostname,))
-    task = cursor.fetchone()
-    conn.close()
-
-    return jsonify({"task": task[0] if task else ""}), 200
+    return jsonify({"message": "Device registered", "hostname": hostname, "ip": ip}), 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
