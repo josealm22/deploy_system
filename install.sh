@@ -33,7 +33,7 @@ if [ ! -d "$INSTALL_DIR" ]; then
 else
     echo "🔄 Actualizando código desde Git..."
     cd $INSTALL_DIR
-    git pull origin main
+    git pull origin master
 fi
 
 # 🔹 Crear entorno virtual de Python
